@@ -43,36 +43,26 @@ gint main(gint argc, gchar *argv[]) {
         sigma = sum;
     }
 
-    GeglBuffer *buffer;
+    gdouble denumerator = exposures;
+
+    GeglNode *mean = gegl_node_new_child(
+        gegl,
+        "operation", "gegl:divide",
+        "value", denumerator,
+        NULL
+    );
+
+
     GeglNode *write_buffer = gegl_node_new_child(
         gegl,
-        "operation", "gegl:buffer-sink",
-        "buffer", &buffer,
+        "operation", "gegl:save",
+        "path", "output.tif",
         NULL);
 
-    gegl_node_link_many(sigma, write_buffer, NULL);
+    gegl_node_link_many(sigma, mean, write_buffer, NULL);
     gegl_node_process(write_buffer);
 
     g_object_unref(gegl);
-
-    GeglNode *gegl_save = gegl_node_new();
-    GeglNode *src = gegl_node_new_child(
-        gegl_save,
-        "operation",
-        "gegl:buffer-source",
-        "buffer", buffer,
-        NULL);
-    GeglNode *sink = gegl_node_new_child(
-        gegl_save,
-        "operation", "gegl:save",
-        "path", "output.tif",
-        NULL
-    );
-    gegl_node_link_many(src, sink, NULL);
-    gegl_node_process(sink);
-    g_object_unref(gegl_save); 
-
-    g_object_unref(buffer);
 
     gegl_exit();
 
