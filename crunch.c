@@ -9,7 +9,8 @@
 #include <glib/gprintf.h>
 #include <stdlib.h>
 
-const int exposures = 87;
+//const int exposures = 384;
+const int exposures = 60;
 
 gint main(gint argc, gchar *argv[]) {
 
@@ -53,13 +54,24 @@ gint main(gint argc, gchar *argv[]) {
     );
 
 
+    gdouble exposure_correction = 9.0;
+    gdouble black_level         = 0.00010;
+
+    GeglNode *exposure = gegl_node_new_child(
+        gegl,
+        "operation", "gegl:exposure",
+        "exposure", exposure_correction,
+        "black-level", black_level,
+        NULL
+    );
+
     GeglNode *write_buffer = gegl_node_new_child(
         gegl,
         "operation", "gegl:save",
         "path", "output.tif",
         NULL);
 
-    gegl_node_link_many(sigma, mean, write_buffer, NULL);
+    gegl_node_link_many(sigma, mean, exposure, write_buffer, NULL);
     gegl_node_process(write_buffer);
 
     g_object_unref(gegl);
